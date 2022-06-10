@@ -1,0 +1,6 @@
+__pycache__
+.ipynb_checkpoints
+
+# ignore the dataset and the dataoutput
+CelebA
+output
