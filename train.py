@@ -131,8 +131,8 @@ def main(args=None):
 
     # Save the weights for inference.py or demo.py
     if args.save_weights:
-        discriminator.save("discriminator.ph")
-        generator.save("generator.ph")
+        discriminator.save_weights("discriminator.ph")
+        generator.save_weights("generator.ph")
 
 
 if __name__ == '__main__':
