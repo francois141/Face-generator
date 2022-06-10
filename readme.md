@@ -16,7 +16,7 @@ python main.py
 
 ## Generated samples 
 
-Theses samples were generated using the generato.
+Theses samples were generated using the generator.
 
 ![alt text](results/face1.jpeg)
 ![alt text](results/face2.jpeg)
