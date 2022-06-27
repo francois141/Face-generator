@@ -1,6 +1,36 @@
 import torch
 import torch.nn as nn
 
+
+class Discriminator_block(nn.Module):
+    def __init__(self,in_layers,out_layers):
+        super(Discriminator_block, self).__init__()
+        self.block = nn.Sequential()
+
+        # This is an encoder with conv - batchnorm - blocks
+        self.block.add_module("Conv_0",nn.Conv2d(in_layers,out_layers, 4, 2, 1, bias=False))
+        self.block.add_module("Batchnorm_0",nn.BatchNorm2d(out_layers))
+        self.block.add_module("ReLU_0",nn.LeakyReLU(0.2, inplace=True))
+
+        for i in range(1,3):
+            self.block.add_module("Conv_{0}".format(i),nn.Conv2d(out_layers, out_layers,kernel_size=3,padding=1))
+            self.block.add_module("Batchnorm_{0}".format(i),nn.BatchNorm2d(out_layers))
+            self.block.add_module("ReLU_{0}".format(i),nn.ReLU(True))
+
+    def forward(self,x):
+        # We can simply run the block
+        return self.block(x)
+    
+class Final_block(nn.Module):
+    def __init__(self,in_layers):
+        super(Final_block, self).__init__()
+        self.block = nn.Sequential(nn.Conv2d(in_layers, 1, 4, 1, 0, bias=False),nn.Sigmoid())
+
+    def forward(self,x):
+        # We can simply run  the block
+        return self.block(x)
+
+
 # Creation of a simple discriminator
 class Discriminator(nn.Module):
     def __init__(self):
@@ -14,49 +44,11 @@ class Discriminator(nn.Module):
         # Creation of the network
         self.main = nn.Sequential(
             # This is a discriminator with Convtranspose - batchnorm - blocks
-            nn.Conv2d(self.nb_channels, self.final_feature_map_size, 4, 2, 1, bias=False),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            # Dimensions at this point : 64 x 32 x 32
-            nn.Conv2d(self.final_feature_map_size, self.final_feature_map_size * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(self.final_feature_map_size * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            nn.Conv2d(self.final_feature_map_size * 2, self.final_feature_map_size * 2, kernel_size=3, padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(self.final_feature_map_size * 2, self.final_feature_map_size * 2, kernel_size=3, padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 2),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            # Dimensions at this point : 128 x 16 x 16
-            nn.Conv2d(self.final_feature_map_size * 2, self.final_feature_map_size * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(self.final_feature_map_size * 4),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            nn.Conv2d(self.final_feature_map_size * 4, self.final_feature_map_size * 4, kernel_size=3, padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 4),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(self.final_feature_map_size * 4, self.final_feature_map_size * 4, kernel_size=3, padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 4),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            # Dimensions at this point : 256 x 8 x 8
-            nn.Conv2d(self.final_feature_map_size * 4, self.final_feature_map_size * 8, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(self.final_feature_map_size * 8),
-            nn.LeakyReLU(0.2, inplace=True),
-            
-            nn.Conv2d(self.final_feature_map_size * 8, self.final_feature_map_size * 8, kernel_size=3, padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 8),
-            nn.LeakyReLU(0.2, inplace=True),
-            nn.Conv2d(self.final_feature_map_size * 8, self.final_feature_map_size * 8, kernel_size=3, padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 8),
-            nn.LeakyReLU(0.2, inplace=True),
-
-            # Dimensions at this point : 512 x 4 x 4
-            nn.Conv2d(self.final_feature_map_size * 8, 1, 4, 1, 0, bias=False),
-            nn.Sigmoid()
-            # Dimensions at this point : 1 x 1 x 1
+            Discriminator_block(self.nb_channels,self.final_feature_map_size),
+            Discriminator_block(self.final_feature_map_size,self.final_feature_map_size*2),
+            Discriminator_block(self.final_feature_map_size*2,self.final_feature_map_size*4),
+            Discriminator_block(self.final_feature_map_size*4,self.final_feature_map_size*8),
+            Final_block(self.final_feature_map_size*8),
         )
 
     def forward(self, input):

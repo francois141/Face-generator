@@ -1,6 +1,34 @@
 import torch
 import torch.nn as nn
 
+class Generator_block(nn.Module):
+    def __init__(self,in_layers,out_layers):
+        super(Generator_block, self).__init__()
+        self.block = nn.Sequential()
+
+        # This is a decoder with convtranspose - batchnorm - blocks
+        self.block.add_module("Conv0", nn.ConvTranspose2d(in_layers, out_layers, 4, 2, 1, bias=False))
+        self.block.add_module("Batchnorm0", nn.BatchNorm2d(out_layers))
+        self.block.add_module("ReLU0", nn.ReLU(True))
+
+        for i in range(1,3):
+            self.block.add_module("Conv{0}".format(i),nn.Conv2d(out_layers, out_layers,kernel_size=3,padding=1))
+            self.block.add_module("Batchnorm{0}".format(i),nn.BatchNorm2d(out_layers))
+            self.block.add_module("ReLU{0}".format(i),nn.ReLU(True))
+
+    def forward(self,x):
+        # We can simply run the block
+        return self.block(x)
+    
+class Final_block(nn.Module):
+    def __init__(self,in_layers):
+        super(Final_block, self).__init__()
+        self.block = nn.Sequential(nn.ConvTranspose2d(in_layers, 3, 4, 2, 1, bias=False))
+
+    def forward(self,x):
+        # We can simply run  the block
+        return self.block(x)
+
 # Creation of a simple generator
 class Generator(nn.Module):
     def __init__(self,latent_space_size):
@@ -16,64 +44,17 @@ class Generator(nn.Module):
 
         # Creation of the network
         self.network = nn.Sequential(
-            # This is a decoder with Convtranspose - batchnorm - blocks
-            nn.ConvTranspose2d( self.latent_stace_size, self.final_feature_map_size * 8, 4, 1, 0, bias=False),
-            nn.BatchNorm2d(self.final_feature_map_size * 8),
-            nn.ReLU(True),
-
-            nn.Conv2d(self.final_feature_map_size * 8, self.final_feature_map_size*8,kernel_size=3,padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 8),
-            nn.ReLU(True),
-            nn.Conv2d(self.final_feature_map_size * 8, self.final_feature_map_size*8,kernel_size=3,padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 8),
-            nn.ReLU(True),
-
-            # Dimensions at this point : 512 x 4 x 4
-            nn.ConvTranspose2d(self.final_feature_map_size * 8, self.final_feature_map_size * 4, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(self.final_feature_map_size * 4),
-            nn.ReLU(True),
-
-            nn.Conv2d(self.final_feature_map_size * 4, self.final_feature_map_size*4,kernel_size=3,padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 4),
-            nn.ReLU(True),
-            nn.Conv2d(self.final_feature_map_size * 4, self.final_feature_map_size*4,kernel_size=3,padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 4),
-            nn.ReLU(True),
-
-            # Dimensions at this point : 256 x 8 x 8
-            nn.ConvTranspose2d( self.final_feature_map_size * 4, self.final_feature_map_size * 2, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(self.final_feature_map_size * 2),
-            nn.ReLU(True),
-
-            nn.Conv2d(self.final_feature_map_size * 2, self.final_feature_map_size*2,kernel_size=3,padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 2),
-            nn.ReLU(True),
-            nn.Conv2d(self.final_feature_map_size * 2, self.final_feature_map_size*2,kernel_size=3,padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size * 2),
-            nn.ReLU(True),
-
-            # Dimensions at this point : 128 x 16 x 16
-            nn.ConvTranspose2d( self.final_feature_map_size * 2, self.final_feature_map_size, 4, 2, 1, bias=False),
-            nn.BatchNorm2d(self.final_feature_map_size),
-            nn.ReLU(True),
-
-            nn.Conv2d(self.final_feature_map_size , self.final_feature_map_size,kernel_size=3,padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size),
-            nn.ReLU(True),
-            nn.Conv2d(self.final_feature_map_size, self.final_feature_map_size,kernel_size=3,padding=1),
-            nn.BatchNorm2d(self.final_feature_map_size),
-            nn.ReLU(True),
-
-
-            # Dimensions at this point : 64 x 32 x 32
-            nn.ConvTranspose2d( self.final_feature_map_size, self.nb_channels, 4, 2, 1, bias=False),
-            nn.Tanh()
-            # Dimensions at this point : 3 x 64 x 64
+            # This is an encoder with Convtranspose - batchnorm - blocks
+            Generator_block(self.latent_stace_size,self.final_feature_map_size*8),
+            Generator_block(self.final_feature_map_size*8,self.final_feature_map_size*4),
+            Generator_block(self.final_feature_map_size*4,self.final_feature_map_size*2),
+            Generator_block(self.final_feature_map_size*2,self.final_feature_map_size*1),
+            Generator_block(self.final_feature_map_size*1,self.final_feature_map_size*1),
+            Final_block(self.final_feature_map_size)
         )
 
         
     def forward(self, input):
-        # Perform a single feed forward inside of the network
         return self.network(input)
         
 
@@ -84,5 +65,3 @@ class Generator(nn.Module):
     # Load the weights for the demo
     def load_weights(self,path):
         self.load_state_dict(torch.load(path))
-
-

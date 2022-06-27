@@ -18,8 +18,7 @@ def main(args=None):
     parser = argparse.ArgumentParser(description='Training script for this GAN implementation')
 
     parser.add_argument('--dataroot',dest ='dataroot',type=str,default="CelebA/Img")
-    parser.add_argument('--batch_size',dest ='batch_size',type=int,default=128)
-    parser.add_argument('--image_size',dest ='image_size',type=int,default=64)
+    parser.add_argument('--batch_size',dest ='batch_size',type=int,default=32)
     parser.add_argument('--num_epochs',dest ='num_epochs',type=int,default=10)
     parser.add_argument('--latent_space_size',dest='latent_space_size',type=int,default=100)
     parser.add_argument('--lr',dest ='lr',type=float,default=0.0002)
@@ -31,8 +30,11 @@ def main(args=None):
     # We set the seed to be able to reproduce the experiments
     set_seed(args.seed)
 
+    # Set the size of the image
+    image_size = 64
+
     # Get the dataset
-    dataset = get_images_dataset(args.dataroot, args.image_size)
+    dataset = get_images_dataset(args.dataroot, image_size)
 
     # Creation of the dataloader
     dataloader = torch.utils.data.DataLoader(dataset, batch_size=args.batch_size,shuffle=True, num_workers=2)
@@ -48,7 +50,7 @@ def main(args=None):
     discriminator = Discriminator().to(device)
     discriminator.apply(weights_init)
 
-    # Setup Adam optimizers for both G and Dsimple
+    # Setup Adam optimizers for both G and D 
     optimizer_discriminator = optim.Adam(discriminator.parameters(), lr=args.lr, betas=(0.5, 0.999))
     optimizer_generator = optim.Adam(generator.parameters(), lr=args.lr, betas=(0.5, 0.999))
 
@@ -110,7 +112,7 @@ def main(args=None):
             optimizer_generator.step()
 
             # Every 50 iterations we print the result of 3 random vector in the latent space to see the training
-            if i % 50 == 0:
+            if i % 25 == 0:
                 # See the progress of the network
                 print("[%d/%d] : [%d/%d]" % (epoch,args.num_epochs,i,len(dataloader)))
 
