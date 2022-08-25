@@ -112,7 +112,7 @@ def main(args=None):
             optimizer_generator.step()
 
             # Every 50 iterations we print the result of 3 random vector in the latent space to see the training
-            if i % 25 == 0:
+            if i % 50 == 0:
                 # See the progress of the network
                 print("[%d/%d] : [%d/%d]" % (epoch,args.num_epochs,i,len(dataloader)))
 
@@ -131,10 +131,10 @@ def main(args=None):
                 plt.savefig('output/hoo{}.png'.format(counter))
                 counter += 1
 
-    # Save the weights for inference.py or demo.py
-    if args.save_weights:
-        discriminator.save_weights("discriminator.ph")
-        generator.save_weights("generator.ph")
+        # Save the weights for inference.py or demo.py
+        if args.save_weights:
+            discriminator.save_weights("models/discriminator{0}.ph".format(i))
+            generator.save_weights("models/generator{0}.ph".format(i))
 
 
 if __name__ == '__main__':

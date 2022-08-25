@@ -44,7 +44,8 @@ class Discriminator(nn.Module):
         # Creation of the network
         self.main = nn.Sequential(
             # This is a discriminator with Convtranspose - batchnorm - blocks
-            Discriminator_block(self.nb_channels,self.final_feature_map_size),
+            nn.Conv2d(self.nb_channels, self.final_feature_map_size, 4, 2, 1, bias=False),
+            nn.LeakyReLU(0.2, inplace=True),
             Discriminator_block(self.final_feature_map_size,self.final_feature_map_size*2),
             Discriminator_block(self.final_feature_map_size*2,self.final_feature_map_size*4),
             Discriminator_block(self.final_feature_map_size*4,self.final_feature_map_size*8),
