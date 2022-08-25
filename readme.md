@@ -1,5 +1,11 @@
 # GAN Implementation
 
+## Generated samples 
+
+Theses samples were generated using the generator.
+
+![alt text](./results.png)
+
 ## Descrition of the project
 
 A simple implementation of a GAN with pytorch that allows to generate new heads.
@@ -13,12 +19,3 @@ You need to first download the data using this link. http://mmlab.ie.cuhk.edu.hk
 ```bash
 python main.py
 ```
-
-## Generated samples 
-
-Theses samples were generated using the generator.
-
-![alt text](results/face1.jpeg)
-![alt text](results/face2.jpeg)
-![alt text](results/face3.jpeg)
-
