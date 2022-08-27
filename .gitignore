@@ -3,4 +3,6 @@ __pycache__
 
 # ignore the dataset and the dataoutput
 CelebA
+celeb
 output
+checkpoints

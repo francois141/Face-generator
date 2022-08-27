@@ -19,3 +19,5 @@ def get_images_dataset(path,image_size):
     # Return the dataset
     return dataset
 
+def get_dataloader(dataset,batch_size,shuffle=True,num_workers=2):
+    return torch.utils.data.DataLoader(dataset,batch_size,shuffle=shuffle, num_workers=num_workers)
